@@ -132,6 +132,18 @@ function buildWeatherUrl() {
     return url;
 }
 
+function validateDateRange() {
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+
+    if (startDate && endDate && endDate < startDate) {
+        showError("A data final não pode ser anterior à data inicial.");
+        return false;
+    }
+
+    return true;
+}
+
 function buildWeatherUrlWithoutDateFilters() {
     const regionId = regionSelect.value;
     const variable = variableSelect.value;
@@ -249,7 +261,7 @@ async function loadWeatherChart() {
                     label: label,
                     data: values,
                     tension: 0.3,
-                    pointRadius: 3,
+                    pointRadius: 1,
                 },
             ],
         },
@@ -262,9 +274,10 @@ async function loadWeatherChart() {
             scales: {
                 x: {
                     ticks: {
-                        autoSkip: false,
+                        autoSkip: true,
+                        maxTicksLimit: 10,
                         maxRotation: 45,
-                        minRotation: 45,
+                        minRotation: 0,
                     },
                 },
                 y: {
@@ -326,6 +339,10 @@ async function updateDashboard() {
         loadButton.textContent = "Carregando...";
 
         clearError();
+
+        if (!validateDateRange()) {
+            return;
+        }
 
         await loadSummary();
         await loadWeatherChart();
