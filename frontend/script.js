@@ -323,8 +323,8 @@ async function updateDashboard() {
 
 loadButton.addEventListener("click", updateDashboard);
 
-regionSelect.addEventListener("change", updateDashboard);
-variableSelect.addEventListener("change", updateDashboard);
+//regionSelect.addEventListener("change", updateDashboard);
+//variableSelect.addEventListener("change", updateDashboard);
 
 loadRegions()
     .then(updateDashboard)
