@@ -68,24 +68,30 @@ async function fetchJson(url) {
     return response.json();
 }
 
-function formatDateLabel(dateTimeText) {
-    const parts = dateTimeText.split(" ");
-
-    const day = parts[1].padStart(2, "0");
-    const month = monthMap[parts[2]];
-    const hour = parts[4].substring(0, 5);
-
-    return `${day}/${month} - ${hour}`;
-}
-
-function formatDateForInput(dateTimeText) {
+function getDateParts(dateTimeText) {
     const parts = dateTimeText.split(" ");
 
     const day = parts[1].padStart(2, "0");
     const month = monthMap[parts[2]];
     const year = parts[3];
+    const hour = parts[4].substring(0, 5);
 
+    return { day, month, year, hour };
+}
+
+function formatDateLabel(dateTimeText) {
+    const { day, month, hour } = getDateParts(dateTimeText);
+    return `${day}/${month} - ${hour}`;
+}
+
+function formatDateForInput(dateTimeText) {
+    const { day, month, year } = getDateParts(dateTimeText);
     return `${year}-${month}-${day}`;
+}
+
+function formatDateForDisplay(isoDate) {
+    const [year, month, day] = isoDate.split("-");
+    return `${day}/${month}/${year}`;
 }
 
 function getHourFromDateTime(dateTimeText) {
@@ -157,37 +163,42 @@ function buildComparisonUrl() {
     return url;
 }
 
-async function updateDateLimits() {
+async function loadDateOptions() {
     const data = await fetchJson(buildWeatherUrlWithoutDateFilters());
 
     if (!data.length) {
         return;
     }
 
-    const firstDate = formatDateForInput(data[0].date_time);
-    const lastDate = formatDateForInput(data[data.length - 1].date_time);
+    const uniqueDates = [...new Set(
+        data.map(item => formatDateForInput(item.date_time))
+    )];
 
-    startDateInput.min = firstDate;
-    startDateInput.max = lastDate;
+    startDateInput.innerHTML = "";
+    endDateInput.innerHTML = "";
 
-    endDateInput.min = firstDate;
-    endDateInput.max = lastDate;
+    const allStartOption = document.createElement("option");
+    allStartOption.value = "";
+    allStartOption.textContent = "Início da base";
 
-    if (startDateInput.value && startDateInput.value < firstDate) {
-        startDateInput.value = firstDate;
-    }
+    const allEndOption = document.createElement("option");
+    allEndOption.value = "";
+    allEndOption.textContent = "Fim da base";
 
-    if (startDateInput.value && startDateInput.value > lastDate) {
-        startDateInput.value = lastDate;
-    }
+    startDateInput.appendChild(allStartOption);
+    endDateInput.appendChild(allEndOption);
 
-    if (endDateInput.value && endDateInput.value < firstDate) {
-        endDateInput.value = firstDate;
-    }
+    uniqueDates.forEach(date => {
+        const startOption = document.createElement("option");
+        startOption.value = date;
+        startOption.textContent = formatDateForDisplay(date);
+        startDateInput.appendChild(startOption);
 
-    if (endDateInput.value && endDateInput.value > lastDate) {
-        endDateInput.value = lastDate;
-    }
+        const endOption = document.createElement("option");
+        endOption.value = date;
+        endOption.textContent = formatDateForDisplay(date);
+        endDateInput.appendChild(endOption);
+    });
 }
 
 async function loadSummary() {
@@ -307,7 +318,6 @@ async function updateDashboard() {
     try {
         clearError();
 
-        await updateDateLimits();
         await loadSummary();
         await loadWeatherChart();
         await loadComparisonChart();
@@ -316,22 +326,28 @@ async function updateDashboard() {
         console.error("Erro ao atualizar dashboard:", error);
 
         showError(
-            "Não foi possível carregar os dados. Verifique se o backend Flask está rodando em http://127.0.0.1:5000."
+            "Não foi possível carregar os dados. Verifique se o backend Flask está rodando."
+        );
+    }
+}
+
+async function initializeDashboard() {
+    try {
+        clearError();
+
+        await loadRegions();
+        await loadDateOptions();
+        await updateDashboard();
+
+    } catch (error) {
+        console.error("Erro ao inicializar dashboard:", error);
+
+        showError(
+            "Não foi possível inicializar o dashboard. Verifique se a API está disponível."
         );
     }
 }
 
 loadButton.addEventListener("click", updateDashboard);
 
-//regionSelect.addEventListener("change", updateDashboard);
-//variableSelect.addEventListener("change", updateDashboard);
-
-loadRegions()
-    .then(updateDashboard)
-    .catch(error => {
-        console.error("Erro ao carregar regiões:", error);
-
-        showError(
-            "Não foi possível carregar as regiões. Verifique se o backend Flask está rodando."
-        );
-    });
+initializeDashboard();
