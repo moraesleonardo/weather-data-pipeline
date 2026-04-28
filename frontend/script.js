@@ -16,6 +16,7 @@ const comparisonCanvas = document.getElementById("comparisonChart");
 
 let weatherChart = null;
 let comparisonChart = null;
+let isLoading = false;
 
 const variableLabels = {
     temperature: "Temperatura",
@@ -315,7 +316,15 @@ async function loadComparisonChart() {
 }
 
 async function updateDashboard() {
+    if (isLoading) {
+        return;
+    }
+
     try {
+        isLoading = true;
+        loadButton.disabled = true;
+        loadButton.textContent = "Carregando...";
+
         clearError();
 
         await loadSummary();
@@ -328,6 +337,11 @@ async function updateDashboard() {
         showError(
             "Não foi possível carregar os dados. Verifique se o backend Flask está rodando."
         );
+
+    } finally {
+        isLoading = false;
+        loadButton.disabled = false;
+        loadButton.textContent = "Atualizar dashboard";
     }
 }
 
