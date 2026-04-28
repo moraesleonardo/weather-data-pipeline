@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Pipeline Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Weather Pipeline Dashboard</h1>
+        <p>Análise comparativa de dados meteorológicos por região e período</p>
+    </header>
+
+    <main>
+        <section class="filters">
+            <div>
+                <label for="regionSelect">Região</label>
+                <select id="regionSelect"></select>
+            </div>
+
+            <div>
+                <label for="variableSelect">Variável climática</label>
+                <select id="variableSelect">
+                    <option value="temperature">Temperatura</option>
+                    <option value="humidity">Umidade</option>
+                    <option value="precipitation">Chuva</option>
+                    <option value="wind_speed">Vento</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="startDate">Data inicial</label>
+                <input type="date" id="startDate">
+            </div>
+
+            <div>
+                <label for="endDate">Data final</label>
+                <input type="date" id="endDate">
+            </div>
+
+            <button id="loadButton">Atualizar dashboard</button>
+        </section>
+        <div id="errorMessage" class="error-message"></div>
+        <section class="cards">
+            <div class="card">
+                <h3>Média</h3>
+                <p id="averageValue">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Mínimo</h3>
+                <p id="minimumValue">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Máximo</h3>
+                <p id="maximumValue">-</p>
+            </div>
+        </section>
+
+        <section class="chart-container">
+            <h2>Gráfico 1: Evolução da variável climática no tempo</h2>
+            <p class="chart-description">
+                Mostra a variação da variável selecionada ao longo do período para a região escolhida.
+            </p>
+            <canvas id="weatherChart"></canvas>
+        </section>
+
+        <section class="chart-container">
+            <h2>Gráfico 2: Comparação da média entre regiões</h2>
+            <p class="chart-description">
+                Compara a média da variável selecionada entre todas as regiões cadastradas.
+            </p>
+            <canvas id="comparisonChart"></canvas>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
